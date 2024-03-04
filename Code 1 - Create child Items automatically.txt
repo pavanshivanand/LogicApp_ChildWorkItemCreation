@@ -1,0 +1,103 @@
+{
+    "definition": {
+        "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+        "actions": {
+            "Condition": {
+                "actions": {
+                    "Create_a_work_item": {
+                        "inputs": {
+                            "body": {
+                                "linkType": "Hierarchy-reverse",
+                                "linkUrl": "@triggerBody()?['url']",
+                                "title": "@{triggerBody()?['fields']?['System_Title']} - Phase 2"
+                            },
+                            "host": {
+                                "connection": {
+                                    "name": "@parameters('$connections')['visualstudioteamservices']['connectionId']"
+                                }
+                            },
+                            "method": "patch",
+                            "path": "/@{encodeURIComponent('test123')}/_apis/wit/workitems/$@{encodeURIComponent('Epic')}",
+                            "queries": {
+                                "account": "pavanshivanand"
+                            }
+                        },
+                        "runAfter": {},
+                        "type": "ApiConnection"
+                    }
+                },
+                "else": {
+                    "actions": {
+                        "Terminate": {
+                            "inputs": {
+                                "runStatus": "Cancelled"
+                            },
+                            "runAfter": {},
+                            "type": "Terminate"
+                        }
+                    }
+                },
+                "expression": {
+                    "and": [
+                        {
+                            "contains": [
+                                "@triggerBody()?['fields']?['System_Title']",
+                                "Project Cloud"
+                            ]
+                        }
+                    ]
+                },
+                "runAfter": {},
+                "type": "If"
+            }
+        },
+        "contentVersion": "1.0.0.0",
+        "outputs": {},
+        "parameters": {
+            "$connections": {
+                "defaultValue": {},
+                "type": "Object"
+            }
+        },
+        "triggers": {
+            "When_a_work_item_is_created": {
+                "evaluatedRecurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "inputs": {
+                    "host": {
+                        "connection": {
+                            "name": "@parameters('$connections')['visualstudioteamservices']['connectionId']"
+                        }
+                    },
+                    "method": "get",
+                    "path": "/v2/workitemcreated_trigger/@{encodeURIComponent('test123')}/_apis/wit/wiql",
+                    "queries": {
+                        "account": "pavanshivanand",
+                        "areaPathComparison": "Equals",
+                        "iterationPathComparison": "Equals",
+                        "wiql__System_WorkItemType": "Task"
+                    }
+                },
+                "recurrence": {
+                    "frequency": "Minute",
+                    "interval": 1
+                },
+                "splitOn": "@triggerBody()?['value']",
+                "type": "ApiConnection"
+            }
+        }
+    },
+    "parameters": {
+        "$connections": {
+            "value": {
+                "visualstudioteamservices": {
+                    "connectionId": "/subscriptions/03187794-99b7-459c-bd82-fc02816176e8/resourceGroups/app/providers/Microsoft.Web/connections/visualstudioteamservices-1",
+                    "connectionName": "visualstudioteamservices-1",
+                    "id": "/subscriptions/03187794-99b7-459c-bd82-fc02816176e8/providers/Microsoft.Web/locations/centralindia/managedApis/visualstudioteamservices"
+                }
+            }
+        }
+    }
+}
